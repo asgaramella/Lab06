@@ -29,16 +29,31 @@ public class MeteoController {
 
 	@FXML
 	private TextArea txtResult;
+	
 
 	@FXML
 	void doCalcolaSequenza(ActionEvent event) {
-
+		try{
+		int mese=boxMese.getValue();
+		txtResult.appendText(model.trovaSequenza(mese));
+		}
+		catch(NullPointerException e){
+			txtResult.appendText("Selezionare un mese!\n");
+		}
 	}
 
 	@FXML
 	void doCalcolaUmidita(ActionEvent event) {
-		String s=model.getUmiditaMedia(boxMese.getValue());
+	
+		try{
+		int mese=boxMese.getValue();
+		String s=model.getUmiditaMedia(mese);
 		txtResult.appendText(s);
+		}
+		catch(Exception e){
+			txtResult.appendText("Selezionare un mese!\n");
+		}
+		
 
 	}
 

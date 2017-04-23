@@ -8,7 +8,7 @@ import it.polito.tdp.meteo.db.MeteoDAO;
 
 public class Model {
 
-	private final static int COST = 50;
+	private final static int COST = 100;
 	private final static int NUMERO_GIORNI_CITTA_CONSECUTIVI_MIN = 3;
 	private final static int NUMERO_GIORNI_CITTA_MAX = 6;
 	private final static int NUMERO_GIORNI_TOTALI = 15;
@@ -36,6 +36,7 @@ public class Model {
 		citta = new LinkedList<Citta>(dao.getAllCitta());
 
 		for (Citta c : citta) {
+			c.setCounter(0);
 			c.setRilevamenti(dao.getAllRilevamentiLocalitaMese(mese, c.getNome()));
 			}
 	}
@@ -43,27 +44,33 @@ public class Model {
 	
 
 	public void scegli(List<SimpleCity> parziale, int livello, List<SimpleCity> best) {
-		if (parziale.size() == 15) {
-			if (this.controllaParziale(parziale) && this.punteggioSoluzione(parziale) > this.punteggioSoluzione(best)) {
+		System.out.println(this.punteggioSoluzione(parziale));
+		System.out.println(parziale.toString());
+		if (parziale.size() == this.NUMERO_GIORNI_TOTALI) {
+			  
+		
+				if(this.punteggioSoluzione(parziale) < this.punteggioSoluzione(best) ) {
 				best.clear();
 				best.addAll(parziale);
-			}
+				
+				}
 			return;
 		} else {
 			for(Citta ctemp:citta){
-				if( ctemp.getCounter()<7){
+				SimpleCity stemp= new SimpleCity(ctemp.getNome());
+				if( ctemp.getCounter()<this.NUMERO_GIORNI_CITTA_MAX ){
 					
-					SimpleCity stemp= new SimpleCity(ctemp.getNome());
-					stemp.setCosto(COST*(ctemp.getRilevamenti().get(livello).getUmidita()));
+					
+					stemp.setCosto(ctemp.getRilevamenti().get(livello).getUmidita());
 							
 					parziale.add(stemp);
 					ctemp.increaseCounter();
 					
-					if(!)
+				if(this.controllaSeq(parziale))
 					scegli(parziale,livello+1,best);
 					
 					
-					parziale.remove(stemp);
+					parziale.remove(livello);
 					ctemp.decreaseCounter();
 				}
 				
@@ -71,6 +78,27 @@ public class Model {
 
 		}
 
+	}
+
+	private boolean controllaSeq(List<SimpleCity> parziale) {
+		
+
+		SimpleCity tmp=parziale.get(0);
+		int cnt=0;
+		for( SimpleCity ctemp:parziale){
+			if(tmp.equals(ctemp))
+				cnt++;
+			else{if(cnt<this.NUMERO_GIORNI_CITTA_CONSECUTIVI_MIN)
+					return false;
+				else{
+					tmp=ctemp;
+					cnt=1;
+					
+				}
+				
+			}
+		}
+		return true;
 	}
 
 	public String trovaSequenza(int mese) {
@@ -89,7 +117,19 @@ public class Model {
 
 	private Double punteggioSoluzione(List<SimpleCity> soluzioneCandidata) {
 		double score = 0.0;
-
+		if(soluzioneCandidata.size()!=0){
+		SimpleCity tmp=soluzioneCandidata.get(0);
+		for(SimpleCity stemp: soluzioneCandidata){
+			if(stemp.equals(tmp))
+				score+=(double) stemp.getCosto();
+			else{
+				score+=(double)( this.COST+stemp.getCosto());
+				tmp=stemp;
+				}
+			}
+		}
+		else
+			score=Double.MAX_VALUE;
 		return score;
 	}
 
